@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수업나눔축제</title>
+<style>
+  :root{
+    --primary:#5b7cfa; --primary-d:#3f5be0;
+    --char:#ff8a3d; --ability:#28b487;
+    --correct:#28b487; --wrong:#ef5350;
+    --bg:#f2f5ff; --card:#ffffff; --ink:#1f2440; --muted:#7a80a0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:linear-gradient(160deg,#e8eeff 0%,#f5f0ff 100%);
+    color:var(--ink); min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .app{width:100%;max-width:920px;}
+  .card{
+    background:var(--card); border-radius:28px; padding:44px 48px;
+    box-shadow:0 24px 60px rgba(60,80,180,.16);
+  }
+  /* 시작 화면 */
+  #start{text-align:center;}
+  .brand{font-size:15px;font-weight:700;color:var(--primary);letter-spacing:2px;margin-bottom:18px;}
+  #start h1{font-size:46px;line-height:1.25;margin-bottom:16px;font-weight:800;letter-spacing:-1px;}
+  #start .sub{font-size:19px;color:var(--muted);line-height:1.6;margin-bottom:36px;}
+  .meta-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:38px;}
+  .meta{background:var(--bg);border-radius:16px;padding:16px 26px;min-width:120px;}
+  .meta b{display:block;font-size:30px;color:var(--primary);}
+  .meta span{font-size:14px;color:var(--muted);}
+  .btn{
+    border:none;cursor:pointer;font-family:inherit;font-weight:800;
+    background:var(--primary);color:#fff;font-size:22px;
+    padding:20px 56px;border-radius:18px;transition:.15s;
+    box-shadow:0 10px 24px rgba(91,124,250,.4);
+  }
+  .btn:hover{background:var(--primary-d);transform:translateY(-2px);}
+  .btn.sec{background:#e6e9f5;color:var(--ink);box-shadow:none;}
+  .btn.sec:hover{background:#d7dbef;}
+  /* 문제 화면 */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .setname{font-size:16px;font-weight:800;color:var(--primary);}
+  .counter{font-size:15px;color:var(--muted);font-weight:700;}
+  .pbar{height:10px;background:#e8ebf7;border-radius:99px;overflow:hidden;margin-bottom:30px;}
+  .pfill{height:100%;background:var(--primary);border-radius:99px;transition:.4s;}
+  .tag{display:inline-block;font-size:14px;font-weight:800;color:#fff;padding:7px 16px;border-radius:99px;margin-bottom:18px;}
+  .tag.char{background:var(--char);}
+  .tag.ability{background:var(--ability);}
+  .qtext{font-size:26px;line-height:1.55;font-weight:700;margin-bottom:30px;letter-spacing:-.5px;}
+  .opts{display:flex;flex-direction:column;gap:14px;}
+  .opt{
+    display:flex;align-items:center;gap:16px;text-align:left;
+    background:var(--bg);border:2.5px solid transparent;border-radius:16px;
+    padding:20px 22px;font-size:19px;font-family:inherit;font-weight:600;color:var(--ink);
+    cursor:pointer;transition:.13s;line-height:1.45;
+  }
+  .opt:hover:not(.locked){border-color:var(--primary);background:#eef2ff;}
+  .opt .num{
+    flex:none;width:36px;height:36px;border-radius:50%;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--primary);
+    border:2px solid #d7dcf2;
+  }
+  .opt.correct{border-color:var(--correct);background:#e6f8f1;}
+  .opt.correct .num{background:var(--correct);color:#fff;border-color:var(--correct);}
+  .opt.wrong{border-color:var(--wrong);background:#fdecec;}
+  .opt.wrong .num{background:var(--wrong);color:#fff;border-color:var(--wrong);}
+  .opt.locked{cursor:default;}
+  .opt.dim{opacity:.55;}
+  /* 피드백 */
+  .fb{margin-top:26px;border-radius:18px;padding:24px 26px;display:none;animation:rise .35s ease;}
+  .fb.show{display:block;}
+  .fb.ok{background:#e6f8f1;border-left:6px solid var(--correct);}
+  .fb.no{background:#fdecec;border-left:6px solid var(--wrong);}
+  .fb .head{font-size:20px;font-weight:800;margin-bottom:10px;}
+  .fb.ok .head{color:#1c8f6b;}
+  .fb.no .head{color:#c0392b;}
+  .fb .body{font-size:17px;line-height:1.7;color:#333a55;}
+  @keyframes rise{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+  .nav{margin-top:30px;text-align:right;display:none;}
+  .nav.show{display:block;}
+  /* 결과 */
+  #result{text-align:center;display:none;}
+  #result h2{font-size:40px;margin-bottom:10px;font-weight:800;}
+  .score{font-size:70px;font-weight:800;color:var(--primary);margin:10px 0;}
+  .score small{font-size:28px;color:var(--muted);}
+  #result .msg{font-size:20px;color:var(--muted);line-height:1.6;margin-bottom:34px;}
+  .hide{display:none;}
+  @media(max-width:600px){
+    .card{padding:30px 22px;border-radius:22px;}
+    #start h1{font-size:32px;} .qtext{font-size:21px;} .opt{font-size:16px;}
+    .score{font-size:54px;}
+  }
+
+  /* 캐릭터 이미지 */
+  .qimgwrap{margin:14px 0 4px;text-align:center;}
+  .qimg{max-width:280px;width:100%;height:auto;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.15);background:#fff;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 시작 -->
+  <section class="card" id="start">
+    <div class="brand">2026 수업나눔축제</div>
+    <h1>캐릭터로 배우는<br>장애이해 퀴즈</h1>
+    <p class="sub">우리가 사랑하는 애니메이션 캐릭터 속에서<br>교실 속 아이들의 마음을 함께 이해해 봐요.</p>
+    <button class="btn" onclick="startQuiz()">퀴즈 시작하기</button>
+  </section>
+
+  <!-- 문제 -->
+  <section class="card hide" id="quiz">
+    <div class="topbar">
+      <span class="setname" id="setname"></span>
+      <span class="counter" id="counter"></span>
+    </div>
+    <div class="pbar"><div class="pfill" id="pfill"></div></div>
+    <span class="tag" id="tag"></span>
+    <p class="qtext" id="qtext"></p>
+    <div class="qimgwrap" id="qimgwrap" style="display:none;"><img class="qimg" id="qimg" alt="캐릭터 이미지"></div>
+    <div class="opts" id="opts"></div>
+    <div class="fb" id="fb">
+      <div class="head" id="fbhead"></div>
+      <div class="body" id="fbbody"></div>
+    </div>
+    <div class="nav" id="nav">
+      <button class="btn" id="nextbtn" onclick="next()">다음 문제 →</button>
+    </div>
+  </section>
+
+  <!-- 결과 -->
+  <section class="card" id="result">
+    <h2 id="rtitle"></h2>
+    <div class="score"><span id="rscore">0</span><small> / 10</small></div>
+    <p class="msg" id="rmsg"></p>
+    <button class="btn sec" onclick="location.reload()">다시 풀기</button>
+  </section>
+
+</div>
+
+<script>
+const QUIZ = [{"set": "1세트", "tag": "캐릭터 퀴즈", "q": "뽀로로의 단짝이자, 언제나 사고를 치지만 미워할 수 없는 이 귀여운 아기 공룡의 이름은 무엇일까요?", "opts": ["패티", "크롱", "포비", "해리"], "answer": 1, "fb": "", "img": "https://static.ebs.co.kr/images/ebs/WAS-HOME/portal/upload/img/programinfo/person/per/1242723212878_bxr2reBk9w.jpg"}, {"set": "1세트", "tag": "장애이해 퀴즈", "q": "뽀로로와 함께 사는 아기 공룡 '크롱'은 처음에는 \"크롱, 크롱!\"이라는 말밖에 하지 못했지만, 시즌이 거듭될수록 \"뽀로로!\", \"형!\" 같은 단어를 말하며 점차 언어가 발달하는 모습을 보여줍니다. 교실에서 크롱이처럼 언어 발달이 또래보다 느린 아이를 마주했을 때, 교사가 취해야 할 가장 바람직한 태도는 무엇일까요?", "opts": ["말을 정확하게 할 때까지 대답해 주지 않고 기다린다.", "\"크롱이가 말이 느리구나\"라며 아이가 보는 앞에서 다른 교사나 학부모와 걱정을 나눈다.", "아이의 불완전한 표현(몸짓, 소리)에도 적극적으로 반응해 주며, 올바른 언어 모델을 반복해서 들려준다.", "언어 발달은 유전적인 요인이므로 교실 환경에서는 개입할 필요가 없다고 판단한다."], "answer": 2, "fb": "크롱이는 단지 '말이 조금 늦된 아이'일 뿐, 적극적인 언어 자극과 지지를 받으면 점차 소통하는 방법을 배우게 됩니다. 교실 속 '말이 느린 크롱이'들에게 필요한 것은 다그침이 아니라, 자신의 작은 몸짓에도 귀 기울여 주는 선생님의 따뜻한 경청과 올바른 언어 모델링입니다."}, {"set": "2세트", "tag": "캐릭터 퀴즈", "q": "백에이커 숲에 살며, 꼬리를 스프링처럼 이용해 통통 튀어 다니는 것을 가장 좋아하는 이 호랑이 캐릭터의 이름은 무엇일까요?", "opts": ["푸", "이요르", "티거", "피글렛"], "answer": 2, "fb": "", "img": "https://i.pinimg.com/1200x/f8/e7/6f/f8e76fccf213297a4c09c8d3329f708e.jpg"}, {"set": "2세트", "tag": "장애이해 퀴즈", "q": "잠시도 가만히 있지 못하고 통통 튀어 다니며 종종 주변 친구들을 곤란하게 만드는 '티거'의 행동은 교실 속 ADHD(주의력결핍 과잉행동장애) 성향의 학생을 떠올리게 합니다. 수업 중 티거처럼 넘치는 에너지를 주체하지 못하는 학생을 위해 교실에서 적용할 수 있는 가장 효과적인 '물리적 환경 조정'은 무엇일까요?", "opts": ["교실 맨 뒷자리에 혼자 앉혀 다른 아이들을 방해하지 않게 한다.", "움직이고 싶은 욕구를 조절할 수 있도록 무거운 무릎 담요나 흔들방석(에어쿠션)을 제공한다.", "움직일 때마다 주의를 주어 행동을 즉각 멈추게 한다.", "집중력이 흐트러지지 않도록 교실 벽면의 모든 시각 자료를 제거한다."], "answer": 1, "fb": "티거처럼 산만하고 충동적인 아이들은 억지로 움직임을 제한하면 오히려 스트레스를 받습니다. 움직임을 완전히 막는 대신, 무릎 담요로 안정감을 주거나 흔들방석을 통해 '앉은 채로 미세하게 움직일 수 있는 통로'를 열어주는 환경 조정이 교실에서 매우 유용합니다."}, {"set": "3세트", "tag": "캐릭터 퀴즈", "q": "바닷속 비키니시티에서 네모바지 스폰지밥과 함께 사는 가장 친한 친구이자, 돌멩이 집에서 사는 이 분홍색 불가사리의 이름은 무엇일까요?", "opts": ["징징이", "집게사장", "뚱이", "플랑크톤"], "answer": 2, "fb": "", "img": "https://i.pinimg.com/736x/d1/1f/1b/d11f1b22b0837e25c6457ec224130745.jpg"}, {"set": "3세트", "tag": "장애이해 퀴즈", "q": "스폰지밥의 단짝 '뚱이'는 이해력이 조금 느리고 상황에 맞지 않는 엉뚱한 행동을 자주 하지만, 누구보다 순수하고 친구를 아끼는 마음을 가지고 있습니다. 우리 교실에서 뚱이처럼 인지 발달이나 사회적 대처 능력이 또래에 비해 조금 천천히 자라는 '경계선 지능(느린 학습자)' 학생을 지도할 때, 가장 적절한 교수 학습 방법은 무엇일까요?", "opts": ["또래들과 똑같은 속도로 학습할 수 있도록 방과 후에 다량의 문제집 풀이를 지도한다.", "추상적인 개념보다는 구체물이나 시각 자료를 활용하고, 과제를 아주 작은 단계(Step-by-Step)로 나누어 제시한다.", "지적 자극을 주기 위해 수준 높은 토론 수업에 적극적으로 참여시킨다.", "스스로 깨달을 때까지 설명 없이 지켜본다."], "answer": 1, "fb": "뚱이 같은 '느린 학습자'들은 배움의 속도가 다를 뿐, 배우지 못하는 것이 아닙니다. 복잡한 지시 사항을 쪼개어 단계별로 안내하고, 직관적인 시각 자료를 제공한다면 느린 학습자들도 자신만의 속도로 충분히 배움을 완성해 나갈 수 있습니다."}, {"set": "4세트", "tag": "캐릭터 퀴즈", "q": "곰돌이 푸의 친구 중 가장 몸집이 작고, 핑크색 줄무늬 옷을 입고 다니며 늘 부끄러움과 겁이 많은 이 꼬마 돼지의 이름은 무엇일까요?", "opts": ["티거", "피글렛", "이요르", "래빗"], "answer": 1, "fb": "", "img": "https://i.pinimg.com/736x/23/86/2c/23862c4f8c0e4539fbd90a0a8291fd23.jpg"}, {"set": "4세트", "tag": "장애이해 퀴즈", "q": "늘 몸을 바르르 떨며 \"어떡하지? 무서워...\"를 입에 달고 사는 '피글렛'은 작은 변화에도 쉽게 놀라고 매사에 걱정이 많습니다. 교실에서 피글렛처럼 극도의 불안을 느끼거나 정서적 지지가 필요한 '불안장애/선택적 함구증' 성향의 학생을 돕기 위한 교사의 태도로 가장 적절하지 않은 것은 무엇일까요?", "opts": ["학기 초나 일과가 변동될 때, 미리 하루 일정을 시각적으로 안내해 주어 예측 가능성을 높인다.", "친구들 앞에서 큰 소리로 발표하게 하여 발표 공포증을 정면으로 돌파하게(직면) 유도한다.", "학생이 긴장을 풀 수 있는 교실 내 '안전 지대(마음 안정 공간)'를 마련해 준다.", "교사와의 일대일 대화나 편지, 메모 등을 통해 마음을 표현할 수 있는 대체 소통 수단을 제공한다."], "answer": 1, "fb": "걱정이 많은 피글렛들에게 억지로 대중 앞에 서게 하는 것은 트라우마를 유발할 수 있습니다. 교실이 나에게 안전한 공간이라는 신뢰를 먼저 주고, '예측 가능한 일과'를 제공하여 불안의 크기를 줄여주는 것이 우선입니다."}, {"set": "5세트", "tag": "캐릭터 퀴즈", "q": "영화 <인사이드 아웃>에서 온통 파란색 피부에 동그란 안경을 쓰고, 슬픈 기억을 만지는 능력을 가진 이 감정 캐릭터의 이름은 무엇일까요?", "opts": ["기쁨이", "까칠이", "소심이", "슬픔이"], "answer": 3, "fb": "", "img": "https://i.pinimg.com/1200x/61/84/be/6184be41df094858885a46cafa57f97f.jpg"}, {"set": "5세트", "tag": "장애이해 퀴즈", "q": "머릿속 세상에서 늘 무기력하게 누워있고 매사를 비관적으로 생각하는 '슬픔이'. 하지만 슬픔이가 있었기에 주인공 라일리는 마음의 상처를 치유하고 성장할 수 있었습니다. 교실에서 슬픔이처럼 우울감이나 무기력에 빠진 학생을 대하는 교사의 올바른 공감적 대화법은 무엇일까요?", "opts": ["\"네가 우울해하니까 반 분위기가 다 어두워지잖아. 힘 좀 내봐!\"", "\"맛있는 거 먹고 다른 생각 하면 다 해결될 일이야. 신경 쓰지 마.\"", "\"슬픈 감정을 느끼는 건 자연스러운 거야. 네가 원할 때 언제든 선생님에게 이야기해 주렴.\"", "\"선생님이 보기에 네 고민은 별거 아니야. 커서 보면 아무것도 아니란다.\""], "answer": 2, "fb": "슬픔이라는 감정은 억누르고 제거해야 할 대상이 아니라, 충분히 위로받고 표현되어야 할 감정입니다. 우울감을 느끼는 학생에게 섣부른 격려나 조언을 건네기보다, 그 감정 자체를 있는 그대로 인정하고 곁에 있어 주는 것이 교사의 가장 큰 역할입니다."}];
+let idx=0, score=0, answered=false;
+const CIRC=['①','②','③','④'];
+
+function startQuiz(){
+  document.getElementById('start').classList.add('hide');
+  document.getElementById('quiz').classList.remove('hide');
+  render();
+}
+function render(){
+  answered=false;
+  const item=QUIZ[idx];
+  document.getElementById('setname').textContent=item.set;
+  document.getElementById('counter').textContent=(idx+1)+' / '+QUIZ.length;
+  document.getElementById('pfill').style.width=((idx)/QUIZ.length*100)+'%';
+  const tag=document.getElementById('tag');
+  tag.textContent=item.tag;
+  tag.className='tag '+(item.tag.indexOf('캐릭터')>-1?'char':'ability');
+  document.getElementById('qtext').textContent=item.q;
+  const qiw=document.getElementById('qimgwrap');
+  const qi=document.getElementById('qimg');
+  if(item.img){ qi.src=item.img; qiw.style.display='block'; }
+  else { qi.removeAttribute('src'); qiw.style.display='none'; }
+  const box=document.getElementById('opts'); box.innerHTML='';
+  item.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.innerHTML='<span class="num">'+CIRC[i]+'</span><span>'+o+'</span>';
+    b.onclick=()=>choose(i,b);
+    box.appendChild(b);
+  });
+  document.getElementById('fb').className='fb';
+  document.getElementById('nav').className='nav';
+  document.getElementById('nextbtn').textContent=(idx===QUIZ.length-1)?'결과 보기 →':'다음 문제 →';
+}
+function choose(i,btn){
+  if(answered) return;
+  answered=true;
+  const item=QUIZ[idx];
+  const nodes=document.querySelectorAll('#opts .opt');
+  nodes.forEach((n,j)=>{
+    n.classList.add('locked');
+    if(j===item.answer) n.classList.add('correct');
+    else if(j===i) n.classList.add('wrong');
+    else n.classList.add('dim');
+  });
+  const ok=(i===item.answer);
+  if(ok) score++;
+  const fb=document.getElementById('fb');
+  const hasFb=item.fb && item.fb.length>0;
+  fb.className='fb show '+(ok?'ok':'no');
+  document.getElementById('fbhead').textContent=ok?'정답입니다!':'정답은 '+CIRC[item.answer]+'번 입니다.';
+  document.getElementById('fbbody').textContent=hasFb?item.fb:(ok?'잘하셨어요!':'다시 한 번 생각해 볼까요?');
+  if(!hasFb) document.getElementById('fbbody').textContent = ok? '정확히 맞히셨습니다!' : '아쉬워요. 정답을 확인해 주세요.';
+  document.getElementById('nav').className='nav show';
+}
+function next(){
+  if(idx===QUIZ.length-1){ showResult(); return; }
+  idx++; render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showResult(){
+  document.getElementById('quiz').classList.add('hide');
+  const r=document.getElementById('result'); r.style.display='block';
+  document.getElementById('rscore').textContent=score;
+  const pct=score/QUIZ.length;
+  let t,m;
+  if(pct===1){t='완벽합니다!';m='모든 문항을 맞히셨어요. 아이들의 마음을 깊이 이해하는 선생님이시네요.';}
+  else if(pct>=0.7){t='훌륭합니다!';m='대부분의 문항을 맞히셨어요. 장애이해에 대한 이해가 탄탄하십니다.';}
+  else if(pct>=0.4){t='좋아요!';m='절반 이상 맞히셨어요. 오늘의 피드백을 떠올리며 한 걸음 더 나아가 봐요.';}
+  else{t='함께 배워요!';m='오늘 나눈 이야기들이 우리 교실의 아이들을 이해하는 좋은 출발점이 될 거예요.';}
+  document.getElementById('rtitle').textContent=t;
+  document.getElementById('rmsg').textContent=m;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
